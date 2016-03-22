@@ -160,7 +160,8 @@ class Conf
 
 //Select the board for which to compile
 #ifdef NRF51
-	#include <board_pca10031.h>
+	#include <board_meshlight.h>
+//#include <board_pca10036.h>
 //#include <board_ars100748.h>
 #endif
 #ifdef NRF52
@@ -238,7 +239,8 @@ enum moduleID{
 
 	//Custom modules
     DEBUG_MODULE_ID=30000,
-    RSSI_MODULE_ID=30001
+    RSSI_MODULE_ID=30001,
+    LIGHTING_MODULE_ID=30002
 };
 
 /*############ Regarding node ids ################*/

@@ -3,7 +3,8 @@
 #
 # Selectable build options 
 #------------------------------------------------------------------------------
-TARGET_BOARD         ?= BOARD_PCA10031
+TARGET_BOARD         ?= BOARD_MESHLIGHT
+TARGET_PRODUCT       ?= MeshLight
 
 #------------------------------------------------------------------------------
 # Define relative paths to SDK components
@@ -14,7 +15,7 @@ COMPONENTS    := $(SDK_BASE)/components
 TEMPLATE_PATH := $(COMPONENTS)/toolchain/gcc
 EHAL_PATH     := $(HOME)/nrf/sdk/ehal_latest
 LINKER_SCRIPT := ./linker/gcc_nrf51_s130_32kb.ld
-OUTPUT_NAME   := FruityMesh
+OUTPUT_NAME   := MeshLight
 JLINK	      := jlinkexe
 
 OS := $(shell uname -s)
@@ -84,6 +85,7 @@ CPP_SOURCE_FILES += ./src/modules/ScanningModule.cpp
 CPP_SOURCE_FILES += ./src/modules/StatusReporterModule.cpp
 CPP_SOURCE_FILES += ./src/modules/DebugModule.cpp
 CPP_SOURCE_FILES += ./src/modules/IoModule.cpp
+CPP_SOURCE_FILES += ./src/modules/LightingModule.cpp
 CPP_SOURCE_FILES += ./src/test/TestBattery.cpp
 CPP_SOURCE_FILES += ./src/test/Testing.cpp
 CPP_SOURCE_FILES += ./src/utility/LedWrapper.cpp
@@ -214,7 +216,7 @@ all: $(BUILD_DIRECTORIES) $(OBJECTS)
 	@echo "build type:    $(BUILD_TYPE)"
 	@echo "build with:    $(TOOLCHAIN_BASE)"
 	@echo "build target:  $(TARGET_BOARD)"
-	@echo "build products --"
+	@echo "build products $(TARGET_PRODUCT)"
 	@echo "               $(OUTPUT_NAME).elf"
 	@echo "               $(OUTPUT_NAME).hex"
 	@echo "*****************************************************"
