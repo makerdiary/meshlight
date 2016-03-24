@@ -28,6 +28,7 @@ extern "C"{
 #include <app_pwm.h>
 #include <app_error.h>
 #include <nrf_gpio.h>
+#include <nrf_adc.h>
 }
 
 class LightingModule: public Module

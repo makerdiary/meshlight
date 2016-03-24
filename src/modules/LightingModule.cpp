@@ -35,6 +35,9 @@ APP_PWM_INSTANCE(PWM2,2);
 
 static volatile bool pwm1_ready_flag, pwm2_ready_flag;            // A flag indicating PWM status.
 
+volatile int32_t light_sensor_adc_val;
+
+
 void pwm_ready_callback(uint32_t pwm_id)    // PWM callback function
 {
 	if(pwm_id == 1) {
@@ -46,7 +49,24 @@ void pwm_ready_callback(uint32_t pwm_id)    // PWM callback function
 	}
 }
 
-void lighting_init(void)
+
+/**
+ * @brief ADC interrupt handler.
+ */
+void ADC_IRQHandler(void)
+{
+    nrf_adc_conversion_event_clean();
+
+    light_sensor_adc_val = nrf_adc_result_get();
+
+    // trigger next ADC conversion
+    nrf_adc_start();
+}
+
+/**
+ * @brief Initialize meshlight hardware.
+ */
+void meshlight_init(void)
 {
     /* 2-channel PWM, 200Hz, output on PWM pins. */
     app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_2CH(250L, PWM_WLED_PIN, PWM_RLED_PIN);
@@ -66,6 +86,21 @@ void lighting_init(void)
     err_code = app_pwm_init(&PWM2,&pwm2_cfg,pwm_ready_callback);
     APP_ERROR_CHECK(err_code);
     //app_pwm_enable(&PWM2);
+
+    /* Initialize PIR sensor PIN as input */
+    nrf_gpio_cfg_input(PIR_SENSOR_PIN, NRF_GPIO_PIN_PULLDOWN);
+
+
+    const nrf_adc_config_t nrf_adc_config = NRF_ADC_CONFIG_DEFAULT;
+
+    // Initialize and configure ADC
+    nrf_adc_configure( (nrf_adc_config_t *)&nrf_adc_config);
+    nrf_adc_input_select(LIGHT_SENSOR_INPUT);
+    nrf_adc_int_enable(ADC_INTENSET_END_Enabled << ADC_INTENSET_END_Pos);
+    NVIC_SetPriority(ADC_IRQn, NRF_APP_PRIORITY_HIGH);
+    NVIC_EnableIRQ(ADC_IRQn);
+
+    nrf_adc_start();
 
 }
 
@@ -93,7 +128,7 @@ void LightingModule::ConfigurationLoadedHandler()
 	if(configuration.moduleVersion == 1){/* ... */};
 
 	//Do additional initialization upon loading the config
-    lighting_init();
+    meshlight_init();
 	//Start the Module...
 
 }
@@ -306,29 +341,34 @@ void LightingModule::ConnectionPacketReceivedEventHandler(connectionPacket* inPa
 			}
 
 			else if(packet->actionType == LightingModuleTriggerActionMessages::GET_PIR_VALUE) {
-
+				u8 buffer[1];
+				buffer[0] = nrf_gpio_pin_read(PIR_SENSOR_PIN);
 				//Confirmation
 				SendModuleActionMessage(
 					MESSAGE_TYPE_MODULE_ACTION_RESPONSE,
 					packet->header.sender,
 					LightingModuleActionResponseMessages::PIR_VALUE_RESPONSE,
 					packet->requestHandle,
-					NULL,
-					0,
+					buffer,
+					1,
 					false
 				);
 			}
 
 			else if(packet->actionType == LightingModuleTriggerActionMessages::GET_LIGHT_VALUE) {
-
-				//Confirmation
+				u8 buffer[4];
+				buffer[0] = light_sensor_adc_val & 0x000000FF;
+				buffer[1] = (light_sensor_adc_val & 0x0000FF00) >> 8;
+				buffer[2] = (light_sensor_adc_val & 0x00FF0000) >> 16;
+				buffer[3] = (light_sensor_adc_val & 0xFF000000) >> 24;
+ 				//Confirmation
 				SendModuleActionMessage(
 					MESSAGE_TYPE_MODULE_ACTION_RESPONSE,
 					packet->header.sender,
 					LightingModuleActionResponseMessages::LIGHT_VALUE_RESPONSE,
 					packet->requestHandle,
-					NULL,
-					0,
+					buffer,
+					4,
 					false
 				);
 			}
@@ -377,13 +417,13 @@ void LightingModule::ConnectionPacketReceivedEventHandler(connectionPacket* inPa
 
 			else if(packet->actionType == LightingModuleActionResponseMessages::PIR_VALUE_RESPONSE)
 			{
-				uart("MODULE", "{\"nodeId\":%u,\"type\":\"get_pir_result\",\"module\":%u,", packet->header.sender, packet->moduleId);
+				uart("MODULE", "{\"nodeId\":%u,\"type\":\"get_pir_result\",\"module\":%u,\"pir_value\":%u,", packet->header.sender, packet->moduleId, packet->data[0]);
 				uart("MODULE",  "\"requestHandle\":%u,\"code\":%u}" SEP, packet->requestHandle, 0);
 			}
 
 			else if(packet->actionType == LightingModuleActionResponseMessages::LIGHT_VALUE_RESPONSE)
 			{
-				uart("MODULE", "{\"nodeId\":%u,\"type\":\"get_light_result\",\"module\":%u,", packet->header.sender, packet->moduleId);
+				uart("MODULE", "{\"nodeId\":%u,\"type\":\"get_light_result\",\"module\":%u,\"light_value\":%u,%u,%u,%u,", packet->header.sender, packet->moduleId, packet->data[3], packet->data[2],packet->data[1],packet->data[0]);
 				uart("MODULE",  "\"requestHandle\":%u,\"code\":%u}" SEP, packet->requestHandle, 0);
 			}
 

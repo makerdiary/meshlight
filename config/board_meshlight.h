@@ -59,4 +59,7 @@
  #define PWM_GLED_PIN  14
  #define PWM_BLED_PIN  15
 
+ #define PIR_SENSOR_PIN  3
+ #define LIGHT_SENSOR_INPUT  NRF_ADC_CONFIG_INPUT_2
+
 #endif
