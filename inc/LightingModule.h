@@ -24,6 +24,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Module.h>
 
+extern "C"{
+#include <app_pwm.h>
+#include <app_error.h>
+#include <nrf_gpio.h>
+}
+
 class LightingModule: public Module
 {
 	private:
@@ -36,11 +42,21 @@ class LightingModule: public Module
 		LightingModuleConfiguration configuration;
 
 		enum LightingModuleTriggerActionMessages{
-			//MESSAGE_0 = 0
+			OPEN_LIGHT = 0,
+			CLOSE_LIGHT = 1,
+			SET_WRGB_CONFIG = 2,
+			GET_PIR_VALUE = 3,
+			GET_LIGHT_VALUE = 4,
+			SET_AUTO_CONFIG = 5    //used to send auto-control configuration
 		};
 
 		enum LightingModuleActionResponseMessages{
-			//MESSAGE_0 = 0
+			OPEN_LIGHT_RESPONSE = 0,
+			CLOSE_LIGHT_RESPONSE = 1,
+			SET_WRGB_CONFIG_RESPONSE = 2,
+			PIR_VALUE_RESPONSE = 3,
+			LIGHT_VALUE_RESPONSE = 4,
+			AUTO_CONFIG_RESPONSE = 5
 		};
 
 		/*
@@ -71,7 +87,7 @@ class LightingModule: public Module
 
 		//void BleEventHandler(ble_evt_t* bleEvent);
 
-		//void ConnectionPacketReceivedEventHandler(connectionPacket* inPacket, Connection* connection, connPacketHeader* packetHeader, u16 dataLength);
+		void ConnectionPacketReceivedEventHandler(connectionPacket* inPacket, Connection* connection, connPacketHeader* packetHeader, u16 dataLength);
 
 		//void NodeStateChangedHandler(discoveryState newState);
 

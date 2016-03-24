@@ -12,7 +12,7 @@
 #ifndef MESHLIGHT_H
 #define MESHLIGHT_H
 
-// LEDs definitions for PCA10031 (nrf51 Dongle)
+// LEDs definitions for MeshLight
 #define LEDS_NUMBER    3
 
 #define LED_START      3
@@ -52,5 +52,11 @@
 #define CTS_PIN_NUMBER 7
 #define RTS_PIN_NUMBER 17
 #define HWFC           false
+
+ // PWM definitions for LED lighting
+ #define PWM_WLED_PIN  6
+ #define PWM_RLED_PIN  13
+ #define PWM_GLED_PIN  14
+ #define PWM_BLED_PIN  15
 
 #endif
