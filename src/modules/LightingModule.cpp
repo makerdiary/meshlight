@@ -81,11 +81,11 @@ void meshlight_init(void)
     /* Initialize and enable PWM. */
     ret_code_t err_code = app_pwm_init(&PWM1,&pwm1_cfg,pwm_ready_callback);
     APP_ERROR_CHECK(err_code);
-    //app_pwm_enable(&PWM1);
+    app_pwm_enable(&PWM1);
 
     err_code = app_pwm_init(&PWM2,&pwm2_cfg,pwm_ready_callback);
     APP_ERROR_CHECK(err_code);
-    //app_pwm_enable(&PWM2);
+    app_pwm_enable(&PWM2);
 
     /* Initialize PIR sensor PIN as input */
     nrf_gpio_cfg_input(PIR_SENSOR_PIN, NRF_GPIO_PIN_PULLDOWN);
@@ -95,12 +95,12 @@ void meshlight_init(void)
 
     // Initialize and configure ADC
     nrf_adc_configure( (nrf_adc_config_t *)&nrf_adc_config);
-    nrf_adc_input_select(LIGHT_SENSOR_INPUT);
-    nrf_adc_int_enable(ADC_INTENSET_END_Enabled << ADC_INTENSET_END_Pos);
-    NVIC_SetPriority(ADC_IRQn, NRF_APP_PRIORITY_HIGH);
-    NVIC_EnableIRQ(ADC_IRQn);
+    //nrf_adc_input_select(LIGHT_SENSOR_INPUT);
+    //nrf_adc_int_enable(ADC_INTENSET_END_Enabled << ADC_INTENSET_END_Pos);
+    //NVIC_SetPriority(ADC_IRQn, NRF_APP_PRIORITY_HIGH);
+    //NVIC_EnableIRQ(ADC_IRQn);
 
-    nrf_adc_start();
+    //nrf_adc_start();
 
 }
 
@@ -304,8 +304,8 @@ void LightingModule::ConnectionPacketReceivedEventHandler(connectionPacket* inPa
 
 			else if(packet->actionType == LightingModuleTriggerActionMessages::OPEN_LIGHT) {
 
-				app_pwm_enable(&PWM1);
-                app_pwm_enable(&PWM2);
+				//app_pwm_enable(&PWM1);
+                //app_pwm_enable(&PWM2);
 
 				//Confirmation
 				SendModuleActionMessage(
@@ -325,8 +325,8 @@ void LightingModule::ConnectionPacketReceivedEventHandler(connectionPacket* inPa
 				app_pwm_channel_duty_set(&PWM2, 0, 0);
 				app_pwm_channel_duty_set(&PWM2, 1, 0);
 
-                app_pwm_disable(&PWM1);
-                app_pwm_disable(&PWM2);
+                //app_pwm_disable(&PWM1);
+                //app_pwm_disable(&PWM2);
                 
 				//Confirmation
 				SendModuleActionMessage(
@@ -357,6 +357,7 @@ void LightingModule::ConnectionPacketReceivedEventHandler(connectionPacket* inPa
 
 			else if(packet->actionType == LightingModuleTriggerActionMessages::GET_LIGHT_VALUE) {
 				u8 buffer[4];
+				light_sensor_adc_val = nrf_adc_convert_single(LIGHT_SENSOR_INPUT);
 				buffer[0] = light_sensor_adc_val & 0x000000FF;
 				buffer[1] = (light_sensor_adc_val & 0x0000FF00) >> 8;
 				buffer[2] = (light_sensor_adc_val & 0x00FF0000) >> 16;
