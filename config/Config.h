@@ -178,7 +178,7 @@ class Conf
 #define TRACE_BUFFER_SIZE 500
 
 //Number of supported Modules
-#define MAX_MODULE_COUNT 10
+#define MAX_MODULE_COUNT 7
 
 //Number of connections that the mesh can use
 #define MAXIMUM_CONNECTIONS 4

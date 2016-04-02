@@ -49,8 +49,8 @@
 // UART connection with J-Link
 #define RX_PIN_NUMBER  10
 #define TX_PIN_NUMBER  11
-#define CTS_PIN_NUMBER 7
-#define RTS_PIN_NUMBER 17
+#define CTS_PIN_NUMBER 12
+#define RTS_PIN_NUMBER 13
 #define HWFC           false
 
  // PWM definitions for LED lighting

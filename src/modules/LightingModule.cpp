@@ -49,20 +49,6 @@ void pwm_ready_callback(uint32_t pwm_id)    // PWM callback function
 	}
 }
 
-
-/**
- * @brief ADC interrupt handler.
- */
-void ADC_IRQHandler(void)
-{
-    nrf_adc_conversion_event_clean();
-
-    light_sensor_adc_val = nrf_adc_result_get();
-
-    // trigger next ADC conversion
-    nrf_adc_start();
-}
-
 /**
  * @brief Initialize meshlight hardware.
  */
@@ -285,10 +271,12 @@ void LightingModule::ConnectionPacketReceivedEventHandler(connectionPacket* inPa
 		//Check if our module is meant and we should trigger an action
 		if(packet->moduleId == moduleId){
 			if(packet->actionType == LightingModuleTriggerActionMessages::SET_WRGB_CONFIG){
-				app_pwm_channel_duty_set(&PWM1, 0, (app_pwm_duty_t)(packet->data[0]));
-				app_pwm_channel_duty_set(&PWM1, 1, (app_pwm_duty_t)(packet->data[1]));
-				app_pwm_channel_duty_set(&PWM2, 0, (app_pwm_duty_t)(packet->data[2]));
-				app_pwm_channel_duty_set(&PWM2, 1, (app_pwm_duty_t)(packet->data[3]));
+
+				/* Set the duty cycle - keep trying until PWM is ready... */
+				while(app_pwm_channel_duty_set(&PWM1, 0, (app_pwm_duty_t)(packet->data[0])) == NRF_ERROR_BUSY);
+				while(app_pwm_channel_duty_set(&PWM1, 1, (app_pwm_duty_t)(packet->data[1])) == NRF_ERROR_BUSY);
+				while(app_pwm_channel_duty_set(&PWM2, 0, (app_pwm_duty_t)(packet->data[2])) == NRF_ERROR_BUSY);
+				while(app_pwm_channel_duty_set(&PWM2, 1, (app_pwm_duty_t)(packet->data[3])) == NRF_ERROR_BUSY);
 
 				//Confirmation
 				SendModuleActionMessage(
@@ -320,10 +308,11 @@ void LightingModule::ConnectionPacketReceivedEventHandler(connectionPacket* inPa
 			}
 
 			else if(packet->actionType == LightingModuleTriggerActionMessages::CLOSE_LIGHT) {
-				app_pwm_channel_duty_set(&PWM1, 0, 0);
-				app_pwm_channel_duty_set(&PWM1, 1, 0);
-				app_pwm_channel_duty_set(&PWM2, 0, 0);
-				app_pwm_channel_duty_set(&PWM2, 1, 0);
+			    /* Set the duty cycle - keep trying until PWM is ready... */
+				while(app_pwm_channel_duty_set(&PWM1, 0, 0) == NRF_ERROR_BUSY);
+				while(app_pwm_channel_duty_set(&PWM1, 1, 0) == NRF_ERROR_BUSY);
+				while(app_pwm_channel_duty_set(&PWM2, 0, 0) == NRF_ERROR_BUSY);
+				while(app_pwm_channel_duty_set(&PWM2, 1, 0) == NRF_ERROR_BUSY);
 
                 //app_pwm_disable(&PWM1);
                 //app_pwm_disable(&PWM2);

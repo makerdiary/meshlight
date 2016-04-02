@@ -103,12 +103,12 @@ Node::Node(networkID networkId)
 	//same module receives the same storage slot
 	activeModules[0] = new DebugModule(moduleID::DEBUG_MODULE_ID, this, cm, "debug", 1);
 	//activeModules[1] = new DFUModule((moduleID::DFU_MODULE_ID, this, cm, "dfu", 2);
-	activeModules[2] = new StatusReporterModule(moduleID::STATUS_REPORTER_MODULE_ID, this, cm, "status", 3);
-	activeModules[3] = new AdvertisingModule(moduleID::ADVERTISING_MODULE_ID, this, cm, "adv", 4);
-	activeModules[4] = new ScanningModule(moduleID::SCANNING_MODULE_ID, this, cm, "scan", 5);
-	activeModules[5] = new EnrollmentModule(moduleID::ENROLLMENT_MODULE_ID, this, cm, "enroll", 6);
-    activeModules[6] = new IoModule(moduleID::IO_MODULE_ID, this, cm, "io", 7);
-    activeModules[7] = new LightingModule(moduleID::LIGHTING_MODULE_ID, this, cm, "lighting", 8);
+	activeModules[1] = new StatusReporterModule(moduleID::STATUS_REPORTER_MODULE_ID, this, cm, "status", 3);
+	activeModules[2] = new AdvertisingModule(moduleID::ADVERTISING_MODULE_ID, this, cm, "adv", 4);
+	activeModules[3] = new ScanningModule(moduleID::SCANNING_MODULE_ID, this, cm, "scan", 5);
+	activeModules[4] = new EnrollmentModule(moduleID::ENROLLMENT_MODULE_ID, this, cm, "enroll", 6);
+    activeModules[5] = new IoModule(moduleID::IO_MODULE_ID, this, cm, "io", 7);
+    activeModules[6] = new LightingModule(moduleID::LIGHTING_MODULE_ID, this, cm, "lighting", 8);
 
 	//Register a pre/post transmit hook for radio events
 	if(Config->enableRadioNotificationHandler){

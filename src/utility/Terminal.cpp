@@ -51,6 +51,7 @@ void Terminal::Init()
 
 	if (promptAndEchoMode)
 	{
+
 		//Send Escape sequence
 		simple_uart_put(27); //ESC
 		simple_uart_putstring((const u8*) "[2J"); //Clear Screen
@@ -95,7 +96,7 @@ void Terminal::PollUART()
 	static char testCopy[250] = {0};
 	readBuffer[0] = 0;
 
-	if (simple_uart_get_with_timeout(0, (u8*) readBuffer))
+    if (simple_uart_get_with_timeout(0, (u8*) readBuffer))
 	{
 
 		//Output query string and typed symbol to terminal

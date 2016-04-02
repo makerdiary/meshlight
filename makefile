@@ -99,12 +99,15 @@ CPP_SOURCE_FILES += ./src/utility/Terminal.cpp
 CPP_SOURCE_FILES += ./src/utility/Utility.cpp
 
 C_SOURCE_FILES += $(EHAL_PATH)/ARM/Nordic/nRF51/src/Vectors_nRF51.c
+C_SOURCE_FILES += $(COMPONENTS)/libraries/fifo/app_fifo.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/gpiote/app_gpiote.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/pwm/app_pwm.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/timer/app_timer.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/util/app_util_platform.c
 C_SOURCE_FILES += $(COMPONENTS)/ble/ble_radio_notification/ble_radio_notification.c
-C_SOURCE_FILES += ./src/nrf/simple_uart.c
+#C_SOURCE_FILES += ./src/nrf/simple_uart.c
+C_SOURCE_FILES += ./src/nrf/simple_uart_fifo.c
+C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/uart/app_uart_fifo.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/hal/nrf_delay.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/hal/nrf_adc.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/common/nrf_drv_common.c
@@ -129,6 +132,7 @@ INC_PATHS += -I$(COMPONENTS)/ble/ble_radio_notification
 INC_PATHS += -I$(COMPONENTS)/ble/ble_services/ble_dfu
 INC_PATHS += -I$(COMPONENTS)/ble/common
 INC_PATHS += -I$(COMPONENTS)/device
+INC_PATHS += -I$(COMPONENTS)/libraries/fifo
 INC_PATHS += -I$(COMPONENTS)/libraries/timer
 INC_PATHS += -I$(COMPONENTS)/libraries/gpiote
 INC_PATHS += -I$(COMPONENTS)/libraries/pwm
@@ -145,6 +149,8 @@ INC_PATHS += -I$(COMPONENTS)/drivers_nrf/gpiote
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/timer
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/pstorage
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/hal
+INC_PATHS += -I$(COMPONENTS)/drivers_nrf/uart
+
 
 OBJECT_DIRECTORY = _build
 LISTING_DIRECTORY = $(OBJECT_DIRECTORY)
