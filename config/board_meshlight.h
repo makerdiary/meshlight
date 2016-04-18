@@ -15,11 +15,11 @@
 // LEDs definitions for MeshLight
 #define LEDS_NUMBER    3
 
-#define LED_START      3
-#define LED_RGB_RED    3
-#define LED_RGB_GREEN  4
-#define LED_RGB_BLUE   5
-#define LED_STOP       5
+#define LED_START      21
+#define LED_RGB_RED    21
+#define LED_RGB_GREEN  22
+#define LED_RGB_BLUE   23
+#define LED_STOP       23
 
 #define LED_RGB_RED_MASK    (1<<LED_RGB_RED)
 #define LED_RGB_GREEN_MASK  (1<<LED_RGB_GREEN)
@@ -35,7 +35,7 @@
 #define BSP_LED_1_MASK    (1<<BSP_LED_1)
 #define BSP_LED_2_MASK    (1<<BSP_LED_2)
 
-#define INVERT_LEDS true
+#define INVERT_LEDS false
 
 #define LEDS_MASK      (BSP_LED_0_MASK | BSP_LED_1_MASK | BSP_LED_2_MASK)
 //defines which LEDs are lit when signal is low
@@ -47,14 +47,14 @@
 #define BUTTONS_MASK   0x00000000
 
 // UART connection with J-Link
-#define RX_PIN_NUMBER  10
-#define TX_PIN_NUMBER  11
-#define CTS_PIN_NUMBER 12
-#define RTS_PIN_NUMBER 13
+#define RX_PIN_NUMBER  11
+#define TX_PIN_NUMBER  9
+#define CTS_PIN_NUMBER 10
+#define RTS_PIN_NUMBER 8
 #define HWFC           false
 
  // PWM definitions for LED lighting
- #define PWM_WLED_PIN  6
+ #define PWM_WLED_PIN  12
  #define PWM_RLED_PIN  13
  #define PWM_GLED_PIN  14
  #define PWM_BLED_PIN  15

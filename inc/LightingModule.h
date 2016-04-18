@@ -46,18 +46,22 @@ class LightingModule: public Module
 			OPEN_LIGHT = 0,
 			CLOSE_LIGHT = 1,
 			SET_WRGB_CONFIG = 2,
-			GET_PIR_VALUE = 3,
-			GET_LIGHT_VALUE = 4,
-			SET_AUTO_CONFIG = 5    //used to send auto-control configuration
+			GET_WRGB_CONFIG = 3,
+			GET_PIR_VALUE = 4,
+			GET_LIGHT_VALUE = 5,
+			SET_AUTO_CONFIG = 6,    //used to send auto-control configuration
+			GET_STATUS = 7
 		};
 
 		enum LightingModuleActionResponseMessages{
 			OPEN_LIGHT_RESPONSE = 0,
 			CLOSE_LIGHT_RESPONSE = 1,
 			SET_WRGB_CONFIG_RESPONSE = 2,
-			PIR_VALUE_RESPONSE = 3,
-			LIGHT_VALUE_RESPONSE = 4,
-			AUTO_CONFIG_RESPONSE = 5
+			GET_WRGB_CONFIG_RESPONSE = 3,
+			PIR_VALUE_RESPONSE = 4,
+			LIGHT_VALUE_RESPONSE = 5,
+			AUTO_CONFIG_RESPONSE = 6,
+			GET_STATUS_RESPONSE = 7
 		};
 
 		/*

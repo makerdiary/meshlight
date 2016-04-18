@@ -36,7 +36,7 @@ APP_PWM_INSTANCE(PWM2,2);
 static volatile bool pwm1_ready_flag, pwm2_ready_flag;            // A flag indicating PWM status.
 
 volatile int32_t light_sensor_adc_val;
-
+volatile app_pwm_duty_t wrgb_buffer[4] = {0, 0, 0, 0};
 
 void pwm_ready_callback(uint32_t pwm_id)    // PWM callback function
 {
@@ -199,6 +199,21 @@ bool LightingModule::TerminalCommandHandler(string commandName, vector<string> c
 				return true;
 			}
 
+			else if(commandArgs.size() == 3 && commandArgs[2] == "get_wrgb")
+			{
+				SendModuleActionMessage(
+					MESSAGE_TYPE_MODULE_TRIGGER_ACTION,
+					destinationNode,
+					LightingModuleTriggerActionMessages::GET_WRGB_CONFIG,
+					0,
+					NULL,
+					0,
+					false
+				);
+
+				return true;
+			}
+
 			else if(commandArgs.size() == 3 && commandArgs[2] == "get_pir")
 			{
 				SendModuleActionMessage(
@@ -249,6 +264,21 @@ bool LightingModule::TerminalCommandHandler(string commandName, vector<string> c
 				return true;
 			}
 
+			else if(commandArgs.size() == 3 && commandArgs[2] == "get_status")
+			{
+				SendModuleActionMessage(
+					MESSAGE_TYPE_MODULE_TRIGGER_ACTION,
+					destinationNode,
+					LightingModuleTriggerActionMessages::GET_STATUS,
+					0,
+					NULL,
+					0,
+					false
+				);
+
+				return true;
+			}
+
 			return false;
 
 		}
@@ -277,6 +307,12 @@ void LightingModule::ConnectionPacketReceivedEventHandler(connectionPacket* inPa
 				while(app_pwm_channel_duty_set(&PWM1, 1, (app_pwm_duty_t)(packet->data[1])) == NRF_ERROR_BUSY);
 				while(app_pwm_channel_duty_set(&PWM2, 0, (app_pwm_duty_t)(packet->data[2])) == NRF_ERROR_BUSY);
 				while(app_pwm_channel_duty_set(&PWM2, 1, (app_pwm_duty_t)(packet->data[3])) == NRF_ERROR_BUSY);
+
+				wrgb_buffer[0] = packet->data[0];
+				wrgb_buffer[1] = packet->data[1];
+				wrgb_buffer[2] = packet->data[2];
+				wrgb_buffer[3] = packet->data[3];
+
 
 				//Confirmation
 				SendModuleActionMessage(
@@ -314,6 +350,11 @@ void LightingModule::ConnectionPacketReceivedEventHandler(connectionPacket* inPa
 				while(app_pwm_channel_duty_set(&PWM2, 0, 0) == NRF_ERROR_BUSY);
 				while(app_pwm_channel_duty_set(&PWM2, 1, 0) == NRF_ERROR_BUSY);
 
+				wrgb_buffer[0] = 0;
+				wrgb_buffer[1] = 0;
+				wrgb_buffer[2] = 0;
+				wrgb_buffer[3] = 0;
+
                 //app_pwm_disable(&PWM1);
                 //app_pwm_disable(&PWM2);
                 
@@ -325,6 +366,25 @@ void LightingModule::ConnectionPacketReceivedEventHandler(connectionPacket* inPa
 					packet->requestHandle,
 					NULL,
 					0,
+					false
+				);
+			}
+
+			else if(packet->actionType == LightingModuleTriggerActionMessages::GET_WRGB_CONFIG) {
+				u8 buffer[4];
+				buffer[0] = wrgb_buffer[0];
+				buffer[1] = wrgb_buffer[1];
+				buffer[2] = wrgb_buffer[2];
+				buffer[3] = wrgb_buffer[3];
+
+				//Confirmation
+				SendModuleActionMessage(
+					MESSAGE_TYPE_MODULE_ACTION_RESPONSE,
+					packet->header.sender,
+					LightingModuleActionResponseMessages::GET_WRGB_CONFIG_RESPONSE,
+					packet->requestHandle,
+					buffer,
+					4,
 					false
 				);
 			}
@@ -377,6 +437,28 @@ void LightingModule::ConnectionPacketReceivedEventHandler(connectionPacket* inPa
 				);
 			}
 
+			else if(packet->actionType == LightingModuleTriggerActionMessages::GET_STATUS) {
+				u8 buffer[7];
+				light_sensor_adc_val = nrf_adc_convert_single(LIGHT_SENSOR_INPUT);
+				buffer[0] = wrgb_buffer[0];
+				buffer[1] = wrgb_buffer[1];
+				buffer[2] = wrgb_buffer[2];
+				buffer[3] = wrgb_buffer[3];
+				buffer[4] = light_sensor_adc_val & 0x000000FF;
+				buffer[5] = (light_sensor_adc_val & 0x0000FF00) >> 8;
+				buffer[6] = nrf_gpio_pin_read(PIR_SENSOR_PIN);
+ 				//Confirmation
+				SendModuleActionMessage(
+					MESSAGE_TYPE_MODULE_ACTION_RESPONSE,
+					packet->header.sender,
+					LightingModuleActionResponseMessages::GET_STATUS_RESPONSE,
+					packet->requestHandle,
+					buffer,
+					7,
+					false
+				);
+			}
+
 		}
 	}
 
@@ -405,6 +487,12 @@ void LightingModule::ConnectionPacketReceivedEventHandler(connectionPacket* inPa
 				uart("MODULE",  "\"requestHandle\":%u,\"code\":%u}" SEP, packet->requestHandle, 0);
 			}
 
+			else if(packet->actionType == LightingModuleActionResponseMessages::GET_WRGB_CONFIG_RESPONSE)
+			{
+				uart("MODULE", "{\"nodeId\":%u,\"type\":\"get_wrgb_result\",\"module\":%u,\"wrgb_value\":[%u,%u,%u,%u],", packet->header.sender, packet->moduleId, packet->data[0], packet->data[1], packet->data[2], packet->data[3]);
+				uart("MODULE",  "\"requestHandle\":%u,\"code\":%u}" SEP, packet->requestHandle, 0);
+			}
+
 			else if(packet->actionType == LightingModuleActionResponseMessages::PIR_VALUE_RESPONSE)
 			{
 				uart("MODULE", "{\"nodeId\":%u,\"type\":\"get_pir_result\",\"module\":%u,\"pir_value\":%u,", packet->header.sender, packet->moduleId, packet->data[0]);
@@ -413,13 +501,19 @@ void LightingModule::ConnectionPacketReceivedEventHandler(connectionPacket* inPa
 
 			else if(packet->actionType == LightingModuleActionResponseMessages::LIGHT_VALUE_RESPONSE)
 			{
-				uart("MODULE", "{\"nodeId\":%u,\"type\":\"get_light_result\",\"module\":%u,\"light_value\":%u,%u,%u,%u,", packet->header.sender, packet->moduleId, packet->data[3], packet->data[2],packet->data[1],packet->data[0]);
+				uart("MODULE", "{\"nodeId\":%u,\"type\":\"get_light_result\",\"module\":%u,\"light_value\":%u,", packet->header.sender, packet->moduleId, packet->data[1]*256 + packet->data[0]);
 				uart("MODULE",  "\"requestHandle\":%u,\"code\":%u}" SEP, packet->requestHandle, 0);
 			}
 
 			else if(packet->actionType == LightingModuleActionResponseMessages::AUTO_CONFIG_RESPONSE)
 			{
 				uart("MODULE", "{\"nodeId\":%u,\"type\":\"set_config_result\",\"module\":%u,", packet->header.sender, packet->moduleId);
+				uart("MODULE",  "\"requestHandle\":%u,\"code\":%u}" SEP, packet->requestHandle, 0);
+			}
+
+			else if(packet->actionType == LightingModuleActionResponseMessages::GET_STATUS_RESPONSE)
+			{
+				uart("MODULE", "{\"nodeId\":%u,\"type\":\"get_status_result\",\"module\":%u,\"data\":[%u,%u,%u,%u,%u,%u,%u],", packet->header.sender, packet->moduleId, packet->data[0], packet->data[1], packet->data[2], packet->data[3], packet->data[4], packet->data[5], packet->data[6]);
 				uart("MODULE",  "\"requestHandle\":%u,\"code\":%u}" SEP, packet->requestHandle, 0);
 			}
 
