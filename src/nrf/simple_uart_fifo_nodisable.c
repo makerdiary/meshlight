@@ -26,12 +26,9 @@
 
 //I changes sth. to disable UART if no receiving device has been
 //detected for a few seconds.
- bool disableUART = false;
 
 uint8_t simple_uart_get(void)
 {
-    if(disableUART) return 0;
-
     uint8_t readbyte;
     while(app_uart_get((uint8_t*)&readbyte) != NRF_SUCCESS);
 
@@ -59,35 +56,17 @@ bool simple_uart_get_with_timeout(int32_t timeout_ms, uint8_t * rx_data)
         }
     } // Wait for RXD data to be received.
 
-    if (timeout_ms >= 0)
-    {
-          disableUART = false;
-    }
-
     return ret;
 }
 
 void simple_uart_put(uint8_t cr)
 {
-    if(disableUART) return;
-
-    uint32_t counter = 0;
-
-    while(app_uart_put(cr) != NRF_SUCCESS)
-    {
-        counter++;
-        if(counter > 1600000 * 2) disableUART = true; // Horrific coding to disable UART after about 2 seconds
-
-        // Wait for TXD data to be sent.
-        if(disableUART) return;
-    }
+    while(app_uart_put(cr) != NRF_SUCCESS);
 }
 
 
 void simple_uart_putstring(const uint8_t * str)
 {
-    if(disableUART) return;
-
     uint_fast8_t i  = 0;
     uint8_t      ch = str[i++];
 

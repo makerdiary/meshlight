@@ -55,7 +55,7 @@ void pwm_ready_callback(uint32_t pwm_id)    // PWM callback function
 void meshlight_init(void)
 {
     /* 2-channel PWM, 200Hz, output on PWM pins. */
-    app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_2CH(250L, PWM_WLED_PIN, PWM_RLED_PIN);
+    app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_2CH(5000L, PWM_WLED_PIN, PWM_RLED_PIN);
     app_pwm_config_t pwm2_cfg = APP_PWM_DEFAULT_CONFIG_2CH(5000L, PWM_GLED_PIN, PWM_BLED_PIN);
 
     /* Switch the polarity of the second channel. */
@@ -72,6 +72,11 @@ void meshlight_init(void)
     err_code = app_pwm_init(&PWM2,&pwm2_cfg,pwm_ready_callback);
     APP_ERROR_CHECK(err_code);
     app_pwm_enable(&PWM2);
+
+	while(app_pwm_channel_duty_set(&PWM1, 0, 80) == NRF_ERROR_BUSY);
+	while(app_pwm_channel_duty_set(&PWM1, 1, 20) == NRF_ERROR_BUSY);
+	while(app_pwm_channel_duty_set(&PWM2, 0, 20) == NRF_ERROR_BUSY);
+	while(app_pwm_channel_duty_set(&PWM2, 1, 20) == NRF_ERROR_BUSY);
 
     /* Initialize PIR sensor PIN as input */
     nrf_gpio_cfg_input(PIR_SENSOR_PIN, NRF_GPIO_PIN_PULLDOWN);
@@ -304,9 +309,9 @@ void LightingModule::ConnectionPacketReceivedEventHandler(connectionPacket* inPa
 
 				/* Set the duty cycle - keep trying until PWM is ready... */
 				while(app_pwm_channel_duty_set(&PWM1, 0, (app_pwm_duty_t)(packet->data[0])) == NRF_ERROR_BUSY);
-				while(app_pwm_channel_duty_set(&PWM1, 1, (app_pwm_duty_t)(packet->data[1])) == NRF_ERROR_BUSY);
-				while(app_pwm_channel_duty_set(&PWM2, 0, (app_pwm_duty_t)(packet->data[2])) == NRF_ERROR_BUSY);
-				while(app_pwm_channel_duty_set(&PWM2, 1, (app_pwm_duty_t)(packet->data[3])) == NRF_ERROR_BUSY);
+				while(app_pwm_channel_duty_set(&PWM1, 1, (app_pwm_duty_t)(packet->data[1]*100/255)) == NRF_ERROR_BUSY);
+				while(app_pwm_channel_duty_set(&PWM2, 0, (app_pwm_duty_t)(packet->data[2]*100/255)) == NRF_ERROR_BUSY);
+				while(app_pwm_channel_duty_set(&PWM2, 1, (app_pwm_duty_t)(packet->data[3]*100/255)) == NRF_ERROR_BUSY);
 
 				wrgb_buffer[0] = packet->data[0];
 				wrgb_buffer[1] = packet->data[1];
